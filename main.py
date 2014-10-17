@@ -1,14 +1,10 @@
 import datetime
-import thread
 from config import config
 from status import load_stat
 import json
 import udp_socket
 import time
-from mole import route, run, static_file, error,get, post, put, delete, Mole
-from mole.template import template
-from mole import request
-from mole import response
+
 
 dataTS = {}
 dataPOST = {}
@@ -26,16 +22,6 @@ def getInfo():
     return json.dumps(load)
 
 
-@route('/')
-def index():
-    global thread_flag, dataPOST
-    if thread_flag:
-        thread_flag = False
-        udp_socket.init_recv()
-        thread.start_new_thread(receiver, ("receiver", 1, ))
-    check()
-    return json.dumps(dataPOST)
-
 def monitor():
     while True:
         udp_socket.send(getInfo())
@@ -50,25 +36,38 @@ def check():
         now_time = datetime.datetime.fromtimestamp(time.time())
 
         if (now_time - last_update_time).seconds >= 30:
-            dataPOST[data['id']] = {"status": "down"}
+            dataPOST[data['id']]['status'] = "down"
         else:
+            if not dataPOST.has_key(data['id']):
+                dataPOST[data['id']] = {}
+            if not dataPOST[data['id']].has_key("history"):
+               dataPOST[data['id']]['history'] = {}
+            history_old = dataPOST[data['id']]['history']
             dataPOST[data['id']] = data
+            dataPOST[data['id']]['history'] = history_old
+            dataPOST[data['id']]['history'][last_update_time.second % 24] = {}
+            dataPOST[data['id']]['history'][last_update_time.second % 24]['load_1'] = data['lavg_1']
+            dataPOST[data['id']]['history'][last_update_time.second % 24]['time'] = int(data['time']*1000)
 
 
-def receiver(threadName, delay):
+def receiver():
     global dataTS
     while True:
         data_str = udp_socket.recv()
         #print(data_str)
         data = json.loads(data_str)
         dataTS[data['id']] = data
-        #print 'dataTS:', json.dumps(dataTS)
+        check()
+        json.dumps(dataPOST)
+        fileHandle = open(config['json'], 'w')
+        fileHandle.write(json.dumps(dataPOST))
+        fileHandle.close()
+        # print 'dataTS:', json.dumps(dataTS)
 
 
 if __name__ == "__main__":
     if config['role'] == 'collector':
         monitor()
     elif config['role'] == 'server':
-        #udp_socket.init_recv()
-        #thread.start_new_thread(receiver, ("receiver", 1, ))
-        run(host='localhost', port=8077, reloader=True)
+        udp_socket.init_recv()
+        receiver()

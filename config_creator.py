@@ -8,6 +8,8 @@ config_src = {
     "server": "monitor.biopano.org",
     "port": 27926,
 
+    'json': "/srv/monitor-website/status.json",
+
 
     "id": 1,
     "location": "US South Center",
