@@ -21,4 +21,4 @@ def recv():
 
 
 def send(data):
-    s.sendto(data, (config['interface_server'], config['interface_udp_port']))
+    s.sendto(data, (config['server'], config['port']))
