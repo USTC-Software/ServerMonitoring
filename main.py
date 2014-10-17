@@ -34,33 +34,25 @@ def index():
         udp_socket.init_recv()
         thread.start_new_thread(receiver, ("receiver", 1, ))
     check()
-    #print "dataPOST", dataPOST
     return json.dumps(dataPOST)
 
 def monitor():
     while True:
         udp_socket.send(getInfo())
-        #print(getInfo())
         time.sleep(1)
 
 
 def check():
     global dataTS, dataPOST
-    #print "in check()"
-    #print dataTS
     for (i, data) in dataTS.items():
-        #print "in for"
         last_update_time_ori = data['time']
         last_update_time = datetime.datetime.fromtimestamp(last_update_time_ori)
         now_time = datetime.datetime.fromtimestamp(time.time())
-        print "deltatime:", (now_time - last_update_time).seconds
-        #print "data:", data,data['id']
 
         if (now_time - last_update_time).seconds >= 30:
             dataPOST[data['id']] = {"status": "down"}
         else:
             dataPOST[data['id']] = data
-            print data
 
 
 def receiver(threadName, delay):
