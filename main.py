@@ -27,7 +27,8 @@ def getInfo():
 
 @route('/')
 def index():
-
+    check()
+    return json.dumps(dataPOST)
 
 def monitor():
     while True:
@@ -37,16 +38,14 @@ def monitor():
 
 def check():
     global dataTS, dataPOST
-    while True:
-        for data in dataTS:
-            last_update_time_ori = data['time']
-            last_update_time = datetime.datetime.fromtimestamp(last_update_time_ori)
-            now_time = datetime.datetime.fromtimestamp(time.time())
-            if (last_update_time - now_time).second >= 10:
-                dataPOST[data['id']] = {"status":"down"}
-            else:
-                dataPOST[data['id']] = data
-    return json.dumps(dataPOST)
+    for data in dataTS:
+        last_update_time_ori = data['time']
+        last_update_time = datetime.datetime.fromtimestamp(last_update_time_ori)
+        now_time = datetime.datetime.fromtimestamp(time.time())
+        if (last_update_time - now_time).second >= 10:
+            dataPOST[data['id']] = {"status":"down"}
+        else:
+            dataPOST[data['id']] = data
 
 
 def receiver():
