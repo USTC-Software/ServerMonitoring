@@ -60,5 +60,5 @@ def receiver():
 if config['role'] == 'collector':
     monitor()
 elif config['role'] == 'server':
-    thread.start_new_thread(receiver)
+    thread.start_new_thread(receiver, ("receiver", 2, ))
     run(host='localhost', port=8077, reloader=True)
