@@ -49,7 +49,7 @@ def check():
             dataPOST[data['id']] = data
 
 
-def receiver():
+def receiver(threadName, delay):
     global dataTS
     while True:
         data_str = udp_socket.recv()
@@ -60,5 +60,5 @@ def receiver():
 if config['role'] == 'collector':
     monitor()
 elif config['role'] == 'server':
-    thread.start_new_thread(receiver, ("receiver", 2, ))
+    thread.start_new_thread(receiver, ("receiver", 1, ))
     run(host='localhost', port=8077, reloader=True)
