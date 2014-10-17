@@ -1,4 +1,5 @@
 import datetime
+import thread
 from config import config
 from status import load_stat
 import json
@@ -59,4 +60,5 @@ def receiver():
 if config['role'] == 'collector':
     monitor()
 elif config['role'] == 'server':
+    thread.start_new_thread(receiver)
     run(host='localhost', port=8077, reloader=True)
