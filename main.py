@@ -62,5 +62,6 @@ def receiver(threadName, delay):
 if config['role'] == 'collector':
     monitor()
 elif config['role'] == 'server':
+    udp_socket.init_recv()
     thread.start_new_thread(receiver, ("receiver", 1, ))
     run(host='localhost', port=8077, reloader=True)
