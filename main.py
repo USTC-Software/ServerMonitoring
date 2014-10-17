@@ -34,6 +34,7 @@ def index():
 def monitor():
     while True:
         udp_socket.send(getInfo())
+        print("sended")
         time.sleep(1)
 
 
@@ -53,6 +54,7 @@ def receiver(threadName, delay):
     global dataTS
     while True:
         data_str = udp_socket.recv()
+        print("received")
         data = json.loads(data_str)
         dataTS[data['id']] = data
 
