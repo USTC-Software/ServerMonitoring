@@ -54,7 +54,7 @@ def receiver(threadName, delay):
     global dataTS
     while True:
         data_str = udp_socket.recv()
-        print("received")
+        print(data_str)
         data = json.loads(data_str)
         dataTS[data['id']] = data
 
