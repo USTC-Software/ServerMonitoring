@@ -12,6 +12,7 @@ from mole import response
 
 dataTS = {}
 dataPOST = {}
+thread_flag = True
 
 def getInfo():
     load = load_stat()
@@ -27,8 +28,13 @@ def getInfo():
 
 @route('/')
 def index():
+    global thread_flag, dataPOST
+    if thread_flag:
+        thread_flag = False
+        udp_socket.init_recv()
+        thread.start_new_thread(receiver, ("receiver", 1, ))
     check()
-    print "dataPOST", dataPOST
+    #print "dataPOST", dataPOST
     return json.dumps(dataPOST)
 
 def monitor():
@@ -39,15 +45,18 @@ def monitor():
 
 
 def check():
-    global dataTS
-    print "in check()"
-    print dataTS
+    global dataTS, dataPOST
+    #print "in check()"
+    #print dataTS
     for (i, data) in dataTS.items():
-        print "in for"
+        #print "in for"
         last_update_time_ori = data['time']
         last_update_time = datetime.datetime.fromtimestamp(last_update_time_ori)
         now_time = datetime.datetime.fromtimestamp(time.time())
-        if (last_update_time - now_time).second >= 10:
+        print "deltatime:", (now_time - last_update_time).seconds
+        #print "data:", data,data['id']
+
+        if (now_time - last_update_time).seconds >= 30:
             dataPOST[data['id']] = {"status": "down"}
         else:
             dataPOST[data['id']] = data
@@ -68,6 +77,6 @@ if __name__ == "__main__":
     if config['role'] == 'collector':
         monitor()
     elif config['role'] == 'server':
-        udp_socket.init_recv()
-        thread.start_new_thread(receiver, ("receiver", 1, ))
+        #udp_socket.init_recv()
+        #thread.start_new_thread(receiver, ("receiver", 1, ))
         run(host='localhost', port=8077, reloader=True)
