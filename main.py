@@ -10,7 +10,6 @@ from mole.template import template
 from mole import request
 from mole import response
 
-
 dataTS = {}
 dataPOST = {}
 
@@ -29,39 +28,46 @@ def getInfo():
 @route('/')
 def index():
     check()
+    print "dataPOST", dataPOST
     return json.dumps(dataPOST)
 
 def monitor():
     while True:
         udp_socket.send(getInfo())
-        print("sended")
+        #print(getInfo())
         time.sleep(1)
 
 
 def check():
-    global dataTS, dataPOST
-    for data in dataTS:
+    global dataTS
+    print "in check()"
+    print dataTS
+    for (i, data) in dataTS.items():
+        print "in for"
         last_update_time_ori = data['time']
         last_update_time = datetime.datetime.fromtimestamp(last_update_time_ori)
         now_time = datetime.datetime.fromtimestamp(time.time())
         if (last_update_time - now_time).second >= 10:
-            dataPOST[data['id']] = {"status":"down"}
+            dataPOST[data['id']] = {"status": "down"}
         else:
             dataPOST[data['id']] = data
+            print data
 
 
 def receiver(threadName, delay):
     global dataTS
     while True:
         data_str = udp_socket.recv()
-        print(data_str)
+        #print(data_str)
         data = json.loads(data_str)
         dataTS[data['id']] = data
+        #print 'dataTS:', json.dumps(dataTS)
 
 
-if config['role'] == 'collector':
-    monitor()
-elif config['role'] == 'server':
-    udp_socket.init_recv()
-    thread.start_new_thread(receiver, ("receiver", 1, ))
-    run(host='localhost', port=8077, reloader=True)
+if __name__ == "__main__":
+    if config['role'] == 'collector':
+        monitor()
+    elif config['role'] == 'server':
+        udp_socket.init_recv()
+        thread.start_new_thread(receiver, ("receiver", 1, ))
+        run(host='localhost', port=8077, reloader=True)
