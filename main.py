@@ -47,7 +47,7 @@ def check():
             dataORI[data['id']] = data
             dataORI[data['id']]['history'] = history_old
             dataORI[data['id']]['history'][last_update_time.hour % 24] = {}
-            dataORI[data['id']]['history'][last_update_time.hour % 24]['load_1'] = data['lavg_1']
+            dataORI[data['id']]['history'][last_update_time.hour % 24]['load_15'] = data['lavg_15']
             dataORI[data['id']]['history'][last_update_time.hour % 24]['time'] = int(data['time']*1000)
     dataPOST = json.loads(json.dumps(dataORI))
     #print dataPOST
@@ -57,7 +57,7 @@ def check():
         #print his_bak
         for (j, history) in data['history'].items():
             #print history
-            dataPOST[str(i)]['history'][history['time']] = float(history['load_1'])
+            dataPOST[str(i)]['history'][history['time']] = float(history['load_15'])
         dataPOST[str(i)]['history'] = sorted(dataPOST[str(i)]['history'].iteritems(), key=lambda d:d[0])
         #print dataORI[i]
         #print ""
