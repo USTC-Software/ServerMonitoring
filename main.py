@@ -7,6 +7,7 @@ import time
 
 
 dataTS = {}
+dataORI = {}
 dataPOST = {}
 thread_flag = True
 
@@ -29,25 +30,37 @@ def monitor():
 
 
 def check():
-    global dataTS, dataPOST
+    global dataTS, dataORI, dataPOST
     for (i, data) in dataTS.items():
         last_update_time_ori = data['time']
         last_update_time = datetime.datetime.fromtimestamp(last_update_time_ori)
         now_time = datetime.datetime.fromtimestamp(time.time())
 
         if (now_time - last_update_time).seconds >= 30:
-            dataPOST[data['id']]['status'] = "down"
+            dataORI[data['id']]['status'] = "down"
         else:
-            if not dataPOST.has_key(data['id']):
-                dataPOST[data['id']] = {}
-            if not dataPOST[data['id']].has_key("history"):
-               dataPOST[data['id']]['history'] = {}
-            history_old = dataPOST[data['id']]['history']
-            dataPOST[data['id']] = data
-            dataPOST[data['id']]['history'] = history_old
-            dataPOST[data['id']]['history'][last_update_time.second % 24] = {}
-            dataPOST[data['id']]['history'][last_update_time.second % 24]['load_1'] = data['lavg_1']
-            dataPOST[data['id']]['history'][last_update_time.second % 24]['time'] = int(data['time']*1000)
+            if not dataORI.has_key(data['id']):
+                dataORI[data['id']] = {}
+            if not dataORI[data['id']].has_key("history"):
+               dataORI[data['id']]['history'] = {}
+            history_old = dataORI[data['id']]['history']
+            dataORI[data['id']] = data
+            dataORI[data['id']]['history'] = history_old
+            dataORI[data['id']]['history'][last_update_time.second % 24] = {}
+            dataORI[data['id']]['history'][last_update_time.second % 24]['load_1'] = data['lavg_1']
+            dataORI[data['id']]['history'][last_update_time.second % 24]['time'] = int(data['time']*1000)
+    dataPOST = json.loads(json.dumps(dataORI))
+    #print dataPOST
+    for (i, data) in dataORI.items():
+
+        dataPOST[str(i)]['history'] = {}
+        #print his_bak
+        for (j, history) in data['history'].items():
+            #print history
+            dataPOST[str(i)]['history'][history['time']] = float(history['load_1'])
+        dataPOST[str(i)]['history'] = sorted(dataPOST[str(i)]['history'].iteritems(), key=lambda d:d[0])
+        #print dataORI[i]
+        #print ""
 
 
 def receiver():
@@ -56,11 +69,10 @@ def receiver():
         data_str = udp_socket.recv()
         #print(data_str)
         data = json.loads(data_str)
-        dataTS[data['id']] = data
+        dataTS[data['id']] = data.copy()
         check()
-        json.dumps(dataPOST)
         fileHandle = open(config['json'], 'w')
-        fileHandle.write(json.dumps(dataPOST))
+        fileHandle.write("data2 = " + json.dumps(dataPOST))
         fileHandle.close()
         # print 'dataTS:', json.dumps(dataTS)
 
