@@ -46,9 +46,9 @@ def check():
             history_old = dataORI[data['id']]['history']
             dataORI[data['id']] = data
             dataORI[data['id']]['history'] = history_old
-            dataORI[data['id']]['history'][last_update_time.second % 24] = {}
-            dataORI[data['id']]['history'][last_update_time.second % 24]['load_1'] = data['lavg_1']
-            dataORI[data['id']]['history'][last_update_time.second % 24]['time'] = int(data['time']*1000)
+            dataORI[data['id']]['history'][last_update_time.hour % 24] = {}
+            dataORI[data['id']]['history'][last_update_time.hour % 24]['load_1'] = data['lavg_1']
+            dataORI[data['id']]['history'][last_update_time.hour % 24]['time'] = int(data['time']*1000)
     dataPOST = json.loads(json.dumps(dataORI))
     #print dataPOST
     for (i, data) in dataORI.items():
